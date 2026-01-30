@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOJIRO ANAX | 合わせなくていい『個性』</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- アイコン用 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-accent: #0047ab;
+            --brand-gold: #c5a059;
+            --marble-bg: url('https://images.unsplash.com/photo-1516550893923-42d28e5677af?q=80&w=2000&auto=format&fit=crop');
+        }
+        body {
+            background-color: #ffffff;
+            background-image: var(--marble-bg);
+            background-attachment: fixed;
+            background-size: cover;
+            color: #1a1a1a;
+            font-family: 'Noto Sans JP', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-brand { font-family: 'Cinzel', serif; }
+        
+        .content-section {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(255,255,255,1) 100%);
+        }
+
+        .nav-link::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 1px;
+            background: var(--brand-accent);
+            transition: width .3s;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        .btn-outline {
+            border: 1px solid #1a1a1a;
+            transition: all 0.5s ease;
+        }
+        .btn-outline:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-title { letter-spacing: 0.05em; }
+        .sub-text {
+            font-size: 0.5em; 
+            font-weight: 300;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.2em;
+            letter-spacing: 0.1em;
+            color: #ffffff;
+        }
+        .main-highlight {
+            font-size: 1.2em;
+            color: #ffffff;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            display: inline-block;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            vertical-align: middle;
+        }
+
+        .photo-frame {
+            position: relative;
+            padding: 12px;
+            background: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            transition: transform 0.5s ease;
+        }
+        .photo-frame:hover { transform: translateY(-5px); }
+
+        .profile-card {
+            border-left: 4px solid var(--brand-accent);
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,245,255,0.8) 100%);
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            background: #000 url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
+        }
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .overlay-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .archive-video-wrapper {
+            cursor: pointer;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+        .archive-video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: none;
+        }
+        .archive-video-wrapper.playing iframe {
+            display: block;
+        }
+        .archive-video-wrapper.playing .thumbnail-overlay {
+            display: none;
+        }
+
+        .time-slot {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            padding: 12px;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+        }
+        .time-slot:hover:not(.disabled) {
+            border-color: var(--brand-accent);
+            color: var(--brand-accent);
+        }
+        .time-slot.selected {
+            background-color: var(--brand-accent);
+            color: white;
+            border-color: var(--brand-accent);
+        }
+        .time-slot.disabled {
+            background-color: #f3f4f6;
+            color: #d1d5db;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        #jacket-preview {
+            position: relative;
+            width: 240px;
+            height: 360px;
+            background-color: #1a1a1a;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 100%, 80% 100%, 20% 100%, 0% 100%, 0% 20%);
+        }
+        .shape-slim { transform: scaleX(0.85); }
+        .shape-oversize { transform: scaleX(1.1); }
+        .pattern-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+        .pattern-none { background: none; }
+        .pattern-stripe { background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.5) 10px, rgba(255,255,255,0.5) 11px); }
+        .pattern-check { background-image: repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(255,255,255,0.3) 20px, rgba(255,255,255,0.3) 21px), repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(255,255,255,0.3) 20px, rgba(255,255,255,0.3) 21px); }
+        
+        .color-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .color-dot.active { border-color: #1a1a1a; transform: scale(1.15); }
+
+        .option-btn {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            letter-spacing: 0.1em;
+        }
+        .option-btn.active {
+            background: var(--brand-accent);
+            color: white;
+            border-color: var(--brand-accent);
+        }
+
+        .sns-icon {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .sns-icon:hover {
+            transform: translateY(-3px);
+            color: var(--brand-accent);
+        }
+
+        .product-card {
+            transition: all 0.4s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ナビゲーション -->
+    <nav class="fixed w-full z-50 px-8 py-6 flex justify-between items-center transition-all duration-500" id="main-nav">
+        <div class="font-brand text-2xl font-bold tracking-widest text-white" id="nav-logo">KOJIRO ANAX</div>
+        <div class="hidden lg:flex space-x-6 items-center text-[10px] font-bold tracking-widest text-white/70" id="nav-links">
+            <a href="#about" class="nav-link text-white">IDENTITY</a>
+            <a href="#show" class="nav-link text-white">PARIS SHOW</a>
+            <a href="#collection" class="nav-link text-white">COLLECTION</a>
+            <a href="#profile" class="nav-link text-white">DIRECTOR</a>
+            <a href="#custom" class="nav-link text-white">CUSTOMIZE</a>
+            <a href="#contact-form" class="nav-link text-white">CONTACT</a>
+            <a href="#contact" class="nav-link text-brand-accent">RESERVATION</a>
+            <!-- SNSクイックリンク -->
+            <div class="flex space-x-4 pl-4 border-l border-white/20">
+                <a href="#" class="text-white hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white hover:text-brand-accent transition"><i class="fab fa-tiktok"></i></a>
+                <a href="#" class="text-white hover:text-brand-accent transition"><i class="fab fa-line"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <header class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+        <div class="video-container">
+            <video id="hero-video" autoplay muted loop playsinline preload="auto">
+                <source src="https://player.vimeo.com/external/494451565.sd.mp4?s=d0092c608f6552a873199dfa8ca7983c2a63261a&profile_id=165" type="video/mp4">
+            </video>
+        </div>
+        <div class="absolute inset-0 hero-overlay z-10"></div>
+        <div class="relative z-20 text-center px-4 w-full">
+            <h1 class="hero-title font-brand text-2xl md:text-5xl lg:text-6xl mb-8 leading-none">
+                <span class="sub-text">合わせなくていい</span><br class="md:hidden">
+                <span class="main-highlight italic">『個性』</span>
+            </h1>
+            <p class="text-base md:text-xl font-light tracking-widest max-w-2xl mx-auto mb-10 text-black/80">
+                PARIS / TOKYO<br>
+                真実の自分を纏う、唯一無二の体験。
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+                <button onclick="scrollToContact()" class="bg-black text-white px-10 py-4 tracking-tighter text-sm font-bold shadow-lg hover:bg-zinc-800 transition">BOOK COUNSELING</button>
+                <button onclick="openCustomizer()" class="btn-outline px-10 py-4 tracking-tighter text-sm font-bold bg-white/20 backdrop-blur-sm">CUSTOM STUDIO</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ショー・アーカイブ -->
+    <section id="show" class="py-32 content-section px-8 overflow-hidden">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 scroll-reveal">
+                <h2 class="text-3xl md:text-5xl font-brand mb-4 tracking-widest text-black">SHOW ARCHIVE</h2>
+                <p class="text-zinc-500 text-xs tracking-[0.5em] uppercase">Paris Fashion Week</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-stretch">
+                <div class="scroll-reveal h-[400px] md:h-auto photo-frame overflow-hidden">
+                    <div class="archive-video-wrapper" id="archive-player" onclick="playArchiveVideo()">
+                        <div class="thumbnail-overlay absolute inset-0 group">
+                            <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop" class="w-full h-full object-cover" alt="[ショーのメイン画像]">
+                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-20 h-20 border-2 border-white rounded-full flex items-center justify-center bg-white/10 backdrop-blur-md">
+                                    <div class="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent ml-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <iframe id="video-iframe" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center space-y-8 scroll-reveal">
+                    <div class="border-l-4 border-brand-accent pl-8 py-4 bg-white/50 backdrop-blur-sm">
+                        <h3 class="text-2xl font-brand mb-4 text-black">2024-25 A/W Collection</h3>
+                        <p class="text-zinc-600 leading-loose font-light">
+                            パリの歴史的な建造物を舞台に発表された最新コレクション。テーマは「UNMASK」。<br>
+                            社会的な仮面を脱ぎ捨て、内なる情熱を解き放つ瞬間を表現しました。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="photo-frame"><img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop" class="w-full aspect-square object-cover" alt="[ショーの詳細1]"></div>
+                        <div class="photo-frame"><img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=600&auto=format&fit=crop" class="w-full aspect-square object-cover" alt="[ショーの詳細2]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商品紹介・購入セクション -->
+    <section id="collection" class="py-32 content-section px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 scroll-reveal">
+                <h2 class="text-3xl md:text-5xl font-brand mb-4 tracking-widest text-black">COLLECTION</h2>
+                <p class="text-zinc-500 text-xs tracking-[0.5em] uppercase">Now Available</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <!-- 商品 1 (画像のみ変更) -->
+                <div class="product-card scroll-reveal">
+                    <div class="photo-frame mb-6">
+                        <img src="https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=800&auto=format&fit=crop" alt="[UNMASK JACKET]" class="w-full aspect-[3/4] object-cover">
+                    </div>
+                    <div class="text-center">
+                        <h3 class="font-brand text-lg mb-2">UNMASK JACKET</h3>
+                        <p class="text-zinc-500 text-xs mb-4">¥88,000 (tax inc.)</p>
+                        <button class="bg-black text-white px-6 py-2 text-[10px] font-bold tracking-widest hover:bg-zinc-800 transition uppercase">Add to Cart</button>
+                    </div>
+                </div>
+                <!-- 商品 2 -->
+                <div class="product-card scroll-reveal" style="transition-delay: 0.1s;">
+                    <div class="photo-frame mb-6">
+                        <img src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=800&auto=format&fit=crop" alt="[リミテッドスウェット]" class="w-full aspect-[3/4] object-cover">
+                    </div>
+                    <div class="text-center">
+                        <h3 class="font-brand text-lg mb-2">IDENTITY HOODIE</h3>
+                        <p class="text-zinc-500 text-xs mb-4">¥24,000 (tax inc.)</p>
+                        <button class="bg-black text-white px-6 py-2 text-[10px] font-bold tracking-widest hover:bg-zinc-800 transition uppercase">Add to Cart</button>
+                    </div>
+                </div>
+                <!-- 商品 3 -->
+                <div class="product-card scroll-reveal" style="transition-delay: 0.2s;">
+                    <div class="photo-frame mb-6">
+                        <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop" alt="[ロゴTシャツ]" class="w-full aspect-[3/4] object-cover">
+                    </div>
+                    <div class="text-center">
+                        <h3 class="font-brand text-lg mb-2">ANAX LOGO TEE</h3>
+                        <p class="text-zinc-500 text-xs mb-4">¥12,000 (tax inc.)</p>
+                        <button class="bg-black text-white px-6 py-2 text-[10px] font-bold tracking-widest hover:bg-zinc-800 transition uppercase">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- IDENTITY セクション -->
+    <section id="about" class="py-32 px-8">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <div class="scroll-reveal">
+                <span class="text-brand-accent text-xs font-bold tracking-[0.5em] mb-4 block uppercase">Authenticity</span>
+                <h2 class="text-3xl md:text-5xl font-brand mb-8 leading-tight text-black">圧倒的な個性</h2>
+                <p class="text-zinc-600 mb-10 leading-relaxed text-lg font-light">
+                    世界を熱狂させたあのショーの余韻を、あなたの日常に。誰にも合わせる必要はない。あなただけの美学を。
+                </p>
+            </div>
+            <div class="relative scroll-reveal">
+                <div class="photo-frame">
+                    <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="[美しいシルエットの服]" class="w-full h-auto object-cover aspect-[3/4]">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 神代彩菜 プロフィール -->
+    <section id="profile" class="py-32 content-section px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="order-2 md:order-1 scroll-reveal">
+                    <div class="profile-card p-10 shadow-2xl">
+                        <span class="text-brand-accent text-xs font-bold tracking-[0.4em] mb-4 block uppercase">CREATIVE DIRECTOR</span>
+                        <h2 class="text-4xl font-brand mb-2 text-black">AYANA KOUJIRO</h2>
+                        <p class="text-lg text-brand-accent font-bold mb-8 tracking-widest">神代 彩菜</p>
+                        <div class="space-y-6 text-zinc-600 font-light leading-loose">
+                            <p>「服は武装ではなく、自己の解放である」という信念。合わせることをやめた瞬間に輝き出すような一着を提案しています。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 scroll-reveal text-center">
+                    <div class="photo-frame inline-block">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" alt="[神代彩菜のポートレート]" class="w-full h-auto object-cover grayscale max-w-sm transition duration-1000 hover:grayscale-0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- お問い合わせセクション -->
+    <section id="contact-form" class="py-32 content-section px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16 scroll-reveal">
+                <h2 class="text-3xl md:text-5xl font-brand mb-4 tracking-widest text-black">CONTACT</h2>
+                <p class="text-zinc-500 text-xs tracking-[0.5em] uppercase">Inquiry</p>
+                <p class="mt-4 text-sm text-zinc-400 font-light">商品やブランドに関するご質問はこちらからお送りください。</p>
+            </div>
+            
+            <div class="bg-white p-8 md:p-12 shadow-sm scroll-reveal">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <label class="block text-[10px] font-bold tracking-widest mb-2 uppercase text-black">Your Name</label>
+                        <input type="text" id="contact-name" class="w-full border-b border-zinc-200 py-3 bg-transparent focus:outline-none focus:border-brand-accent transition" placeholder="名前">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold tracking-widest mb-2 uppercase text-black">Email Address</label>
+                        <input type="email" id="contact-email" class="w-full border-b border-zinc-200 py-3 bg-transparent focus:outline-none focus:border-brand-accent transition" placeholder="メールアドレス">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold tracking-widest mb-2 uppercase text-black">Message</label>
+                    <textarea id="contact-message" rows="4" class="w-full border-b border-zinc-200 py-3 bg-transparent focus:outline-none focus:border-brand-accent transition resize-none" placeholder="メッセージを入力してください"></textarea>
+                </div>
+                <button id="btn-submit-contact" class="mt-12 w-full bg-black text-white py-5 text-sm font-bold tracking-[0.2em] hover:bg-zinc-800 transition">SEND MESSAGE</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 予約セクション -->
+    <section id="contact" class="py-32 px-8 bg-white overflow-hidden">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16 scroll-reveal">
+                <h2 class="text-3xl md:text-5xl font-brand mb-4 tracking-widest text-black">RESERVATION</h2>
+                <p class="text-zinc-500 text-xs tracking-[0.5em] uppercase">Private Counseling</p>
+                <p class="mt-4 text-sm text-zinc-400 font-light">特別な一着のための、デザイナーとのカウンセリング。下記より希望日時を選択してください。</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 bg-zinc-50 p-8 md:p-12 shadow-sm scroll-reveal">
+                <div>
+                    <label class="block text-xs font-bold tracking-widest mb-4 uppercase text-black">Step 1: Select Date</label>
+                    <input type="date" id="booking-date" class="w-full border-b border-zinc-200 py-3 mb-8 bg-transparent focus:outline-none focus:border-brand-accent transition">
+                    <label class="block text-xs font-bold tracking-widest mb-4 uppercase text-black">Step 2: Select Time</label>
+                    <div id="time-slots" class="grid grid-cols-2 gap-3"></div>
+                </div>
+                <div class="flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <label class="block text-xs font-bold tracking-widest mb-2 uppercase text-black">Step 3: Your Information</label>
+                        <input type="text" id="user-name" placeholder="Name / お名前" class="w-full border-b border-zinc-200 py-3 bg-transparent focus:outline-none focus:border-brand-accent transition">
+                        <input type="email" id="user-email" placeholder="Email / メールアドレス" class="w-full border-b border-zinc-200 py-3 bg-transparent focus:outline-none focus:border-brand-accent transition">
+                    </div>
+                    <button id="btn-submit-booking" class="mt-12 w-full bg-black text-white py-5 text-sm font-bold tracking-[0.2em] hover:bg-zinc-800 transition disabled:opacity-30">BOOK NOW</button>
+                </div>
+            </div>
+
+            <div id="booking-history" class="mt-20 scroll-reveal">
+                <h3 class="text-xs font-bold tracking-widest mb-8 uppercase text-center text-black">Your Appointments</h3>
+                <div id="history-list" class="space-y-4 max-w-2xl mx-auto text-sm">
+                    <p class="text-center text-zinc-400 italic">予約履歴はありません。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 高度なカスタマイザーモーダル -->
+    <div id="customizer-overlay" class="overlay-modal font-brand">
+        <div class="flex flex-col lg:flex-row h-full bg-zinc-100">
+            <div class="w-full lg:w-2/3 flex flex-col items-center justify-center p-12 relative overflow-hidden bg-zinc-200">
+                <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
+                <div id="jacket-viewport" class="z-10 transition-transform duration-700">
+                    <div id="jacket-preview" class="shadow-2xl">
+                        <div id="pattern-layer" class="pattern-overlay pattern-none"></div>
+                    </div>
+                </div>
+                <p class="mt-12 text-[10px] tracking-[0.5em] text-zinc-400 uppercase">Interactive Studio Preview</p>
+            </div>
+            
+            <div class="w-full lg:w-1/3 p-12 bg-white flex flex-col overflow-y-auto border-l border-zinc-200">
+                <div class="mb-12 flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tighter text-black">CUSTOM STUDIO</h2>
+                        <p class="text-[9px] text-zinc-400 tracking-[0.3em] uppercase">Create your identity</p>
+                    </div>
+                    <button onclick="closeCustomizer()" class="text-xs underline tracking-widest text-black">CLOSE</button>
+                </div>
+
+                <div class="space-y-10">
+                    <div>
+                        <label class="block text-[10px] font-bold tracking-widest mb-4 uppercase text-black">01. Color</label>
+                        <div class="flex gap-4">
+                            <div class="color-dot active" style="background-color: #1a1a1a;" onclick="updateColor('#1a1a1a', this)"></div>
+                            <div class="color-dot" style="background-color: #0047ab;" onclick="updateColor('#0047ab', this)"></div>
+                            <div class="color-dot" style="background-color: #700000;" onclick="updateColor('#700000', this)"></div>
+                            <div class="color-dot" style="background-color: #c5a059;" onclick="updateColor('#c5a059', this)"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold tracking-widest mb-4 uppercase text-black">02. Design Pattern</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="option-btn active" onclick="updatePattern('none', this)">SOLID</div>
+                            <div class="option-btn" onclick="updatePattern('stripe', this)">STRIPE</div>
+                            <div class="option-btn" onclick="updatePattern('check', this)">CHECK</div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold tracking-widest mb-4 uppercase text-black">03. Silhouette</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="option-btn active" onclick="updateShape('standard', this)">STD</div>
+                            <div class="option-btn" onclick="updateShape('slim', this)">SLIM</div>
+                            <div class="option-btn" onclick="updateShape('oversize', this)">OVER</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-12">
+                    <button onclick="finishCustom()" class="w-full bg-black text-white py-4 text-xs font-bold tracking-[0.2em] hover:bg-zinc-800 transition">SAVE DESIGN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-20 px-8 bg-zinc-50 text-center">
+        <div class="font-brand text-2xl text-black mb-8">KOJIRO ANAX</div>
+        
+        <!-- SNS リンク -->
+        <div class="flex justify-center space-x-8 mb-12 text-2xl text-zinc-400">
+            <a href="#" class="sns-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="sns-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="#" class="sns-icon" title="Official LINE"><i class="fab fa-line"></i></a>
+        </div>
+
+        <p class="text-[10px] tracking-[0.3em] text-zinc-400 uppercase">Follow our journey</p>
+        <div class="h-px w-20 bg-zinc-200 mx-auto my-8"></div>
+        <p class="text-[10px] tracking-[0.3em] text-zinc-400">&copy; 2024 KOJIRO ANAX. BEYOND FASHION.</p>
+    </footer>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kojiro-anax-demo';
+
+        let currentUser = null;
+        let selectedTimeSlot = null;
+        let allBookings = [];
+        const possibleTimes = ["11:00", "13:00", "15:00", "17:00", "19:00"];
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                listenToBookings();
+            }
+        });
+
+        function listenToBookings() {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'counseling_bookings'));
+            onSnapshot(q, (snapshot) => {
+                allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTimeSlots();
+                renderHistory();
+            }, (error) => console.error("Firestore error:", error));
+        }
+
+        const bookingDateInput = document.getElementById('booking-date');
+        if(bookingDateInput) bookingDateInput.min = new Date().toISOString().split('T')[0];
+
+        function renderTimeSlots() {
+            const container = document.getElementById('time-slots');
+            const selectedDate = bookingDateInput.value;
+            container.innerHTML = selectedDate ? '' : '<p class="col-span-2 text-xs text-zinc-400 italic">日付を選択してください</p>';
+            if (!selectedDate) return;
+
+            possibleTimes.forEach(time => {
+                const isTaken = allBookings.some(b => b.date === selectedDate && b.time === time);
+                const slot = document.createElement('div');
+                slot.className = `time-slot ${isTaken ? 'disabled' : ''} ${selectedTimeSlot === time ? 'selected' : ''}`;
+                slot.innerText = isTaken ? `${time} FULL` : time;
+                if (!isTaken) slot.onclick = () => { selectedTimeSlot = time; renderTimeSlots(); };
+                container.appendChild(slot);
+            });
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            const myBookings = allBookings.filter(b => b.userId === currentUser?.uid);
+            if (myBookings.length === 0) {
+                container.innerHTML = '<p class="text-center text-zinc-400 italic">予約履歴はありません。</p>';
+                return;
+            }
+            container.innerHTML = '';
+            myBookings.forEach(b => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-zinc-50 border-l-4 border-black p-4 tracking-widest text-black";
+                item.innerHTML = `<div><span class="font-bold">${b.date}</span> at <span class="font-bold">${b.time}</span></div>
+                    <button class="text-xs text-red-400 font-bold" onclick="window.cancelBooking('${b.id}')">CANCEL</button>`;
+                container.appendChild(item);
+            });
+        }
+
+        document.getElementById('btn-submit-booking').onclick = async () => {
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const date = bookingDateInput.value;
+            if (!date || !selectedTimeSlot || !name || !email) return alert("入力漏れがあります。");
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'counseling_bookings'), {
+                    userId: currentUser.uid, name, email, date, time: selectedTimeSlot, createdAt: serverTimestamp()
+                });
+                alert("予約が完了しました。");
+                selectedTimeSlot = null;
+                renderTimeSlots();
+            } catch (err) { alert("エラーが発生しました。"); }
+        };
+
+        window.cancelBooking = async (id) => {
+            if (confirm("キャンセルしますか？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'counseling_bookings', id));
+        };
+
+        // お問い合わせ送信ロジック
+        document.getElementById('btn-submit-contact').onclick = async () => {
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const message = document.getElementById('contact-message').value;
+
+            if (!name || !email || !message) return alert("すべて入力してください。");
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'inquiries'), {
+                    name, email, message, createdAt: serverTimestamp()
+                });
+                alert("メッセージを送信しました。");
+                document.getElementById('contact-name').value = '';
+                document.getElementById('contact-email').value = '';
+                document.getElementById('contact-message').value = '';
+            } catch (err) { alert("送信に失敗しました。"); }
+        };
+
+        if(bookingDateInput) bookingDateInput.onchange = renderTimeSlots;
+        initAuth();
+    </script>
+
+    <script>
+        // カスタマイザー機能
+        const jacket = document.getElementById('jacket-preview');
+        const patternLayer = document.getElementById('pattern-layer');
+
+        function updateColor(color, el) {
+            jacket.style.backgroundColor = color;
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function updatePattern(pattern, el) {
+            patternLayer.className = 'pattern-overlay pattern-' + pattern;
+            updateActiveBtn(el);
+        }
+
+        function updateShape(shape, el) {
+            jacket.classList.remove('shape-slim', 'shape-oversize');
+            if (shape !== 'standard') jacket.classList.add('shape-' + shape);
+            updateActiveBtn(el);
+        }
+
+        function updateActiveBtn(el) {
+            el.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function openCustomizer() { document.getElementById('customizer-overlay').style.display = 'block'; }
+        function closeCustomizer() { document.getElementById('customizer-overlay').style.display = 'none'; }
+        function finishCustom() { alert("デザインを保存しました！"); closeCustomizer(); }
+
+        function scrollToContact() { document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }); }
+        
+        function playArchiveVideo() {
+            const wrapper = document.getElementById('archive-player');
+            const iframe = document.getElementById('video-iframe');
+            iframe.src = "https://www.youtube.com/embed/f_vO_vXlW08?autoplay=1&mute=0&controls=1&rel=0";
+            wrapper.classList.add('playing');
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('main-nav');
+            const logo = document.getElementById('nav-logo');
+            const links = document.querySelectorAll('.nav-link');
+            const snsIcons = nav.querySelectorAll('.fab');
+            if (window.scrollY > 50) {
+                nav.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                logo.style.color = 'black';
+                links.forEach(l => { if(!l.classList.contains('text-brand-accent')) l.style.color = 'black'; });
+                snsIcons.forEach(i => i.parentElement.style.color = 'black');
+            } else {
+                nav.style.backgroundColor = 'transparent';
+                logo.style.color = 'white';
+                links.forEach(l => { if(!l.classList.contains('text-brand-accent')) l.style.color = 'white'; });
+                snsIcons.forEach(i => i.parentElement.style.color = 'white');
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const v = document.getElementById('hero-video');
+            if (v) v.play().catch(() => {});
+        });
+    </script>
+</body>
+</html>
